@@ -15,6 +15,7 @@ import com.surendra.todo_app_kotlin.data.models.Priority
 import com.surendra.todo_app_kotlin.data.models.ToDoData
 import com.surendra.todo_app_kotlin.data.viewmodel.SharedViewModel
 import com.surendra.todo_app_kotlin.data.viewmodel.TodoViewModel
+import com.surendra.todo_app_kotlin.databinding.FragmentUpdateBinding
 import kotlinx.android.synthetic.main.fragment_update.*
 
 
@@ -23,6 +24,9 @@ class UpdateFragment : Fragment() {
     private val args by navArgs<UpdateFragmentArgs>()
     private lateinit var viewModel: TodoViewModel
     private val sharedViewModel: SharedViewModel by viewModels()
+
+    private var _binding:FragmentUpdateBinding? =null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,16 +37,14 @@ class UpdateFragment : Fragment() {
 
         setHasOptionsMenu(true)
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_update, container, false)
+        _binding = FragmentUpdateBinding.inflate(inflater,container,false)
+        binding.args = args
+        return binding.root;
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        et_current_Title.setText(args.currentItem.title)
-        et_current_Description.setText(args.currentItem.description)
-        current_priorities_spinner.setSelection(sharedViewModel.parsePriorityToInt(args.currentItem.priority))
-        current_priorities_spinner.onItemSelectedListener= sharedViewModel.listener
+        binding.currentPrioritiesSpinner.onItemSelectedListener= sharedViewModel.listener
 
     }
 
@@ -96,6 +98,11 @@ class UpdateFragment : Fragment() {
             Toast.makeText(requireContext(),"Please fill all the fields",Toast.LENGTH_SHORT).show()
         }
 
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 

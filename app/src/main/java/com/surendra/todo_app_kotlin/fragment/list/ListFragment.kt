@@ -14,6 +14,7 @@ import com.surendra.todo_app_kotlin.R
 import com.surendra.todo_app_kotlin.data.models.ToDoData
 import com.surendra.todo_app_kotlin.data.viewmodel.SharedViewModel
 import com.surendra.todo_app_kotlin.data.viewmodel.TodoViewModel
+import com.surendra.todo_app_kotlin.databinding.FragmentListBinding
 import kotlinx.android.synthetic.main.fragment_list.*
 
 
@@ -24,6 +25,9 @@ class ListFragment : Fragment() {
     private lateinit var listAdapter: ListAdapter
     private val sharedViewModel: SharedViewModel by viewModels()
 
+    private var _binding : FragmentListBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -33,23 +37,22 @@ class ListFragment : Fragment() {
         setHasOptionsMenu(true)
         viewModel = (activity as MainActivity).viewModel
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_list, container, false)
+        _binding = FragmentListBinding.inflate(inflater,container,false)
+//        return inflater.inflate(R.layout.fragment_list, container, false)
+        binding.sharedViewModel = sharedViewModel
+        binding.lifecycleOwner = this
+        return binding.root
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        floatingActionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_listFragment_to_addFragment)
-        }
         setupRecyclerView()
         viewModel.getAllTasks.observe(viewLifecycleOwner, Observer {
             sharedViewModel.checkIfEmpty(it)
             listAdapter.differ.submitList(it)
         })
 
-        sharedViewModel.emptyDatabase.observe(viewLifecycleOwner, Observer {
-            showEmptyDatabase(it)
-        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -78,23 +81,17 @@ class ListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         listAdapter= ListAdapter()
-        recyclerView.apply {
+        binding.recyclerView.apply {
             setHasFixedSize(true)
             adapter = listAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
-    private fun showEmptyDatabase(emptyDatabase:Boolean){
-       if (emptyDatabase){
-           iv_no_data.visibility=View.VISIBLE
-           tv_no_data.visibility=View.VISIBLE
-       }
-        else{
-           iv_no_data.visibility=View.INVISIBLE
-           tv_no_data.visibility=View.INVISIBLE
-       }
-    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding =null //Whenever our fragment is destroyed, we need to set our binding to null to avoid memory leak
+    }
 
 }
